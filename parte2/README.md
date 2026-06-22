@@ -1,4 +1,3 @@
-Aquí está el README completo listo para pegar en GitHub:
 # Parte 2 — Kernel de 64 bits
 
 ## Integrantes
