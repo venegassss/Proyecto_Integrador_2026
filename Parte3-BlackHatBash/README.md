@@ -14,6 +14,7 @@
 5. Verificación: `sudo make test` → "Lab is up."
 
 ### Arquitectura del laboratorio
+
 | Máquina | Red(es) | IP(s) | Hostname |
 |---|---|---|---|
 | p-web-01 | Pública | 172.16.10.10 | p-web-01.acme-infinity-servers.com |
@@ -31,21 +32,28 @@
 - `br_public`: 172.16.10.0/24 (bridge host: 172.16.10.1)
 - `br_corporate`: 10.1.0.0/24 (bridge host: 10.1.0.1)
 
-Verificado con: `ip addr | grep "br_"` → confirma `br_public` en `172.16.10.1/24` y `br_corporate` en `10.1.0.1/24`.
+Verificado con: `ip addr | grep "br_"` → confirma `br_public` en 172.16.10.1/24 y `br_corporate` en 10.1.0.1/24.
 
 ### Evidencia
-- `capturas/make_deploy.png`
-- `capturas/make_test.png`
-- `capturas/docker_ps.png`
-- `capturas/ip_addr.png`
-- `capturas/docker_exec.png`
 
----
+**Despliegue (`make deploy`):**
+![make deploy](capturas/make_deploy.png)
+
+**Verificación (`make test` → Lab is up):**
+![make test](capturas/make_test.png)
+
+**Contenedores activos (`docker ps`):**
+![docker ps](capturas/docker_ps.png)
+
+**Interfaces de red (`ip addr`):**
+![ip addr](capturas/ip_addr.png)
+
+**Acceso a p-web-01 (`docker exec`):**
+![docker exec](capturas/docker_exec.png)
 
 ## 3.B — Técnica de hacking
 
 ### Técnica 1: Escaneo de puertos (Nmap)
-
 **Comando:** `nmap -sV -sC 172.16.10.10 -oN scan_web01.txt`
 
 **Resultado:** Solo el puerto 8081/TCP abierto, fingerprint de Werkzeug/3.0.1 Python/3.12.3 (servidor de desarrollo Flask).
@@ -55,7 +63,6 @@ Verificado con: `ip addr | grep "br_"` → confirma `br_public` en `172.16.10.1/
 **Por qué funciona:** Los servicios responden con banners o comportamientos característicos que Nmap compara contra su base de firmas para deducir software y versión.
 
 ### Técnica 2: Fingerprinting web (WhatWeb)
-
 **Comando:** `whatweb -v http://172.16.10.10:8081`
 
 **Resultado:** Confirma HTML5, Werkzeug 3.0.1, Python 3.12.3.
@@ -67,11 +74,14 @@ Verificado con: `ip addr | grep "br_"` → confirma `br_public` en `172.16.10.1/
 **Interpretación:** Confirmamos que p-web-01 corre una aplicación Flask sobre el servidor de desarrollo Werkzeug 3.0.1 con Python 3.12.3. Esto es relevante porque Werkzeug está diseñado para desarrollo, no producción: carece de las protecciones de un servidor WSGI real (como Gunicorn detrás de un proxy), y si el modo debug estuviera activo, podría exponer un depurador interactivo con riesgo de ejecución remota de código. No se explotó esta condición — el alcance del ejercicio fue de reconocimiento, identificando la superficie de ataque y tecnología expuesta.
 
 ### Evidencia
-- `capturas/nmap_scan.png`
-- `capturas/whatweb.png`
-- `evidencia/scan_web01.txt`
 
----
+**Escaneo Nmap:**
+![nmap scan](capturas/nmap_scan.png)
+
+**Fingerprinting WhatWeb:**
+![whatweb](capturas/whatweb.png)
+
+📄 Salida completa: [`evidencia/scan_web01.txt`](evidencia/scan_web01.txt)
 
 ## Cómo reproducir esta parte
 1. Instalar Docker (ver comandos en la sección de instalación arriba)
@@ -84,3 +94,5 @@ Verificado con: `ip addr | grep "br_"` → confirma `br_public` en `172.16.10.1/
 
 ## Diagrama de red
 ![Diagrama de red](capturas/red_diagrama.png)
+
+*Ámbar = interfaz en ambas redes (riesgo de pivote / movimiento lateral)*
